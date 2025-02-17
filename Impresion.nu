@@ -27,7 +27,7 @@ let shipping_ids = ($shipping_ids
     let dimensions = (magick $"($id)_temp.png" -format "%wx%h" info:)
     let width = ($dimensions | split row "x" | get 0 | into int)
     let height = ($dimensions | split row "x" | get 1 | into int)
-    magick -size 1000x1000 xc:none -gravity center -pointsize 40 -fill "rgba(0,0,0,0.5)" -draw "rotate -30 text 0,0 'Para mejores precios\ncontactar a Santiago:\n3412270326'" -write mpr:watermark +delete -size $"($width)x($height)" tile:mpr:watermark $"($id)_watermark.png"
+    magick -size 1000x1000 xc:none -gravity center -pointsize 40 -fill "rgba(0,0,0,0.5)" -draw "rotate -30 text 0,0 '($env.MercadoLibre.Watermark'" -write mpr:watermark +delete -size $"($width)x($height)" tile:mpr:watermark $"($id)_watermark.png"
     magick $"($id)_temp.png" -pointsize 40 -fill black -draw $"text ($width - 2000),200 'Items a enviar:\n($items_text)'" $"($id)_with_items.png"
     magick composite -dissolve 100 $"($id)_watermark.png" $"($id)_with_items.png" $"($id)_final.png"
     magick $"($id)_final.png" $"($id)_final.pdf"
