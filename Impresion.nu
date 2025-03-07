@@ -1,10 +1,6 @@
-source .env
-source .token
-if ((($env.MercadoLibre.TokenLifetime | into datetime) - (date now)) < 0hr) {
-    nu renew_token.nu
-    source .token
-}
-let shipping_ids = (curl -X GET $"https://api.mercadolibre.com/orders/search?seller=($env.MercadoLibre.UserID)&sort=date_desc&limit=5" -H $"Authorization: Bearer ($env.MercadoLibre.AcessToken)" 
+source /home/santiago/IsoPrint/.env
+source /home/santiago/IsoPrint/.token
+let shipping_ids = (curl -X GET $"https://api.mercadolibre.com/orders/search?seller=($env.MercadoLibre.UserID)&sort=date_desc&limit=10" -H $"Authorization: Bearer ($env.MercadoLibre.AcessToken)" 
     | jq '.results[].shipping.id' 
     | lines 
     | where {|it| $it =~ '^\d+$' })
@@ -27,10 +23,12 @@ let shipping_ids = ($shipping_ids
     let dimensions = (magick $"($id)_temp.png" -format "%wx%h" info:)
     let width = ($dimensions | split row "x" | get 0 | into int)
     let height = ($dimensions | split row "x" | get 1 | into int)
-    magick -size 1000x1000 xc:none -gravity center -pointsize 40 -fill "rgba(0,0,0,0.5)" -draw "rotate -30 text 0,0 '($env.MercadoLibre.Watermark'" -write mpr:watermark +delete -size $"($width)x($height)" tile:mpr:watermark $"($id)_watermark.png"
+    magick -size 1000x1000 xc:none -gravity center -pointsize 40 -fill "rgba(0,0,0,0.5)" -draw $"rotate -30 text 0,0 '($env.MercadoLibre.Watermark)'" -write mpr:watermark +delete -size $"($width)x($height)" tile:mpr:watermark $"($id)_watermark.png"
     magick $"($id)_temp.png" -pointsize 40 -fill black -draw $"text ($width - 2000),200 'Items a enviar:\n($items_text)'" $"($id)_with_items.png"
     magick composite -dissolve 100 $"($id)_watermark.png" $"($id)_with_items.png" $"($id)_final.png"
     magick $"($id)_final.png" $"($id)_final.pdf"
     lpr $"($id)_final.pdf"
     rm $"($id).pdf" $"($id)_temp.pdf" $"($id)_temp.png" $"($id)_watermark.png" $"($id)_with_items.png" $"($id)_final.png" $"($id)_final.pdf"
+    "Imprimí la " + $"($id)" + " PDF\n" | save Logs --append
 })
+

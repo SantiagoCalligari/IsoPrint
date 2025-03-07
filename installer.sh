@@ -23,4 +23,4 @@ echo "Installation complete. Impresion.nu will run every 30 minutes."
 
 # Step 5: Run Impresion.nu for the first time
 echo "Running Impresion.nu for the first time..."
-./Impresion.nu
+nu Impresion.nu
